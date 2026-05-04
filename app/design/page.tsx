@@ -46,7 +46,7 @@ function calcPrice(props: any){
   return p;
 }
 
-function fmt(n) {
+function fmt(n: number) {   // ✅ บอก TypeScript ว่า n เป็น number
   return n.toLocaleString("th-TH");
 }
 
