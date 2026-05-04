@@ -210,14 +210,15 @@ function OptionCard({ option, selected, onSelect }: { option: any; selected: any
 }
 
 // ─── Step 1: Face ─────────────────────────────────────────────
-function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl }: {
+function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl, setUploadName }: {
   face: any;
   setFace: (v: any) => void;
   faceType: string;
   setFaceType: (v: string) => void;
-  uploadUrl: string;
-  setUploadUrl: (v: string) => void;
-}) {  
+  uploadUrl: string | null;
+  setUploadUrl: (v: string | null) => void;
+  setUploadName: (v: string | null) => void;
+}) {
   const fileRef = useRef(null);
 
 function handleFile(e: React.ChangeEvent<HTMLInputElement>) {    
