@@ -157,7 +157,7 @@ function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, 
 }
 
 // ─── Stepper ──────────────────────────────────────────────────
-function Stepper({ step }) {
+function Stepper({ step }: { step: number }) {
   return (
     <div className="px-5 pt-4">
       <div className="flex items-center">
@@ -188,7 +188,7 @@ function Stepper({ step }) {
 }
 
 // ─── Option Card ─────────────────────────────────────────────
-function OptionCard({ option, selected, onSelect }) {
+function OptionCard({ option, selected, onSelect }: { option: any; selected: any; onSelect: any }) {
   const isSel = selected?.id === option.id;
   return (
     <button onClick={() => onSelect(option)}
