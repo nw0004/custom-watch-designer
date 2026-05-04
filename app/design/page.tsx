@@ -52,12 +52,12 @@ function fmt(n: number) {   // ✅ บอก TypeScript ว่า n เป็น
 interface WatchSVGProps {
   face?: { fill?: string };
   strap?: { fill?: string };
-  cas?: { fill?: string };
+  cas?: { fill?: string; id?: string };  
   engraving?: string;
   faceType?: string;
   uploadUrl?: string;
-  imgScale?: number;   
-  imgRotate?: number; 
+  imgScale?: number;
+  imgRotate?: number;
 }
 
 // ─── SVG Watch Preview ────────────────────────────────────────
