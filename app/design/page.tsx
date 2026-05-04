@@ -46,7 +46,7 @@ function calcPrice(props: any){
   return p;
 }
 
-function fmt(n: number) {   // ✅ บอก TypeScript ว่า n เป็น number
+function fmt(n: number) {   
   return n.toLocaleString("th-TH");
 }
 interface WatchSVGProps {
@@ -619,8 +619,8 @@ export default function CustomWatchApp() {
   const [engraving,  setEngraving]  = useState("");
   const [engDate,    setEngDate]    = useState("");
   const [faceType,   setFaceType]   = useState("basic");
-  const [uploadUrl,  setUploadUrl]  = useState(null);
-  const [uploadName, setUploadName] = useState(null);
+  const [uploadUrl,  setUploadUrl]  = useState<string | null>(null);
+  const [uploadName, setUploadName] = useState<string | null>(null);
   const [imgScale,   setImgScale]   = useState(50);
   const [imgRotate,  setImgRotate]  = useState(0);
 
