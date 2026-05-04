@@ -219,7 +219,7 @@ function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUr
   setUploadUrl: (v: string | null) => void;
   setUploadName: (v: string | null) => void;
 }) {
-  const fileRef = useRef(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
 function handleFile(e: React.ChangeEvent<HTMLInputElement>) {    
 const file = e.target.files?.[0];
