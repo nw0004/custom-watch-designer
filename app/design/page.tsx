@@ -69,7 +69,7 @@ function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, 
   const hColor    = faceFill === "#F0EDE8" ? "#1A1A1A" : "#E8C96A";
   const bevColor  = cas?.id === "gold" ? "#A0792E" : casFill;
   const logoColor = faceFill === "#F0EDE8" ? "#555555" : "#C9A84C";
-  const sc = imgScale / 50;
+  const sc = (imgScale ?? 1) / 50;
 
   return (
     <svg viewBox="0 0 200 260" width={190} height={247} xmlns="http://www.w3.org/2000/svg">
