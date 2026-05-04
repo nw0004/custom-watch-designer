@@ -56,6 +56,8 @@ interface WatchSVGProps {
   engraving?: string;
   faceType?: string;
   uploadUrl?: string;
+  imgScale?: number;   
+  imgRotate?: number; 
 }
 
 // ─── SVG Watch Preview ────────────────────────────────────────
