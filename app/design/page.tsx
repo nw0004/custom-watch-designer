@@ -49,9 +49,17 @@ function calcPrice(props: any){
 function fmt(n: number) {   // ✅ บอก TypeScript ว่า n เป็น number
   return n.toLocaleString("th-TH");
 }
+interface WatchSVGProps {
+  face?: { fill?: string };
+  strap?: { fill?: string };
+  cas?: { fill?: string };
+  engraving?: string;
+  faceType?: string;
+  uploadUrl?: string;
+}
 
 // ─── SVG Watch Preview ────────────────────────────────────────
-function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, imgRotate }) {
+function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, imgRotate }: WatchSVGProps) {  
   const faceFill  = face?.fill  ?? "#111";
   const strapFill = strap?.fill ?? "#4A4A4A";
   const casFill   = cas?.fill   ?? "#C0C0C0";
@@ -60,7 +68,7 @@ function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, 
   const bevColor  = cas?.id === "gold" ? "#A0792E" : casFill;
   const logoColor = faceFill === "#F0EDE8" ? "#555555" : "#C9A84C";
   const sc = imgScale / 50;
-
+}
   return (
     <svg viewBox="0 0 200 260" width={190} height={247} xmlns="http://www.w3.org/2000/svg">
       <defs>
