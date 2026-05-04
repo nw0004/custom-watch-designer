@@ -210,7 +210,14 @@ function OptionCard({ option, selected, onSelect }: { option: any; selected: any
 }
 
 // ─── Step 1: Face ─────────────────────────────────────────────
-function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl, setUploadName, imgScale, setImgScale, imgRotate, setImgRotate }) {
+function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl }: {
+  face: any;
+  setFace: (v: any) => void;
+  faceType: string;
+  setFaceType: (v: string) => void;
+  uploadUrl: string;
+  setUploadUrl: (v: string) => void;
+}) {  
   const fileRef = useRef(null);
 
   function handleFile(e) {
