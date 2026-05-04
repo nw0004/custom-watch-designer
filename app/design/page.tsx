@@ -220,8 +220,8 @@ function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUr
 }) {  
   const fileRef = useRef(null);
 
-  function handleFile(e) {
-    const file = e.target.files[0];
+function handleFile(e: React.ChangeEvent<HTMLInputElement>) {    
+  const file = e.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert("ไฟล์ใหญ่เกิน 5MB"); return; }
     const reader = new FileReader();
