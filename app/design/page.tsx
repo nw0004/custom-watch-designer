@@ -225,7 +225,13 @@ const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert("ไฟล์ใหญ่เกิน 5MB"); return; }
     const reader = new FileReader();
-    reader.onload = (ev) => { setUploadUrl(ev.target?.result ?? null); setUploadName(file.name); };
+    reader.onload = (ev) => { 
+  const result = ev.target?.result;
+  if (typeof result === 'string') {
+    setUploadUrl(result); 
+    setUploadName(file.name); 
+  }
+};
     reader.readAsDataURL(file);
   }
 
