@@ -36,8 +36,8 @@ const UPLOAD_PRICE   = 2000;
 const ENGRAVE_PRICE  = 500;
 const DELIVERY_PRICE = 150;
 
-function calcPrice({ strap, faceType, engraving }: any){
-  let p = BASE_PRICE;
+function calcPrice(props: any){
+  const { strap, faceType, engraving } = props  let p = BASE_PRICE;
   p += strap?.extra ?? 0;
   if (faceType === "upload") p += UPLOAD_PRICE;
   if (engraving?.trim())    p += ENGRAVE_PRICE;
