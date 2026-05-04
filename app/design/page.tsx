@@ -37,12 +37,15 @@ const ENGRAVE_PRICE  = 500;
 const DELIVERY_PRICE = 150;
 
 function calcPrice(props: any){
-  const { strap, faceType, engraving } = props  let p = BASE_PRICE;
+  const { strap, faceType, engraving } = props;
+
+  let p = BASE_PRICE;
   p += strap?.extra ?? 0;
   if (faceType === "upload") p += UPLOAD_PRICE;
-  if (engraving?.trim())    p += ENGRAVE_PRICE;
+  if (engraving?.trim()) p += ENGRAVE_PRICE;
   return p;
 }
+
 function fmt(n) {
   return n.toLocaleString("th-TH");
 }
