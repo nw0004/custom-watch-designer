@@ -17,10 +17,10 @@ const STRAPS = [
 ];
 
 const CASES = [
-  { id: "silver",  name: "Silver",    th: "ซิลเวอร์",   fill: "#C0C0C0", sw: "#C0C0C0" },
-  { id: "black",   name: "Black",     th: "แบล็ค",      fill: "#2A2A2A", sw: "#2A2A2A" },
-  { id: "gold",    name: "Gold",      th: "ทอง",        fill: "#C9A84C", sw: "#C9A84C" },
-  { id: "rosegold",name: "Rose Gold", th: "โรสโกลด์",   fill: "#C89B8C", sw: "#C89B8C" },
+  { id: "silver",   name: "Silver",    th: "ซิลเวอร์",   fill: "#C0C0C0", sw: "#C0C0C0" },
+  { id: "black",    name: "Black",     th: "แบล็ค",      fill: "#2A2A2A", sw: "#2A2A2A" },
+  { id: "gold",     name: "Gold",      th: "ทอง",        fill: "#C9A84C", sw: "#C9A84C" },
+  { id: "rosegold", name: "Rose Gold", th: "โรสโกลด์",   fill: "#C89B8C", sw: "#C89B8C" },
 ];
 
 const STEP_LABELS = [
@@ -36,9 +36,34 @@ const UPLOAD_PRICE   = 2000;
 const ENGRAVE_PRICE  = 500;
 const DELIVERY_PRICE = 150;
 
-function calcPrice(props: any){
-  const { strap, faceType, engraving } = props;
+// ─── Types ────────────────────────────────────────────────────
+interface Option {
+  id: string;
+  name: string;
+  th: string;
+  fill: string;
+  sw: string;
+  extra?: number;
+}
 
+interface CartItem {
+  id: number;
+  face: string;
+  strap: string;
+  cas: string;
+  engraving: string;
+  price: number;
+  added: string;
+  saved?: string;
+}
+
+interface CalcPriceProps {
+  strap: Option | null;
+  faceType: string;
+  engraving: string;
+}
+
+function calcPrice({ strap, faceType, engraving }: CalcPriceProps): number {
   let p = BASE_PRICE;
   p += strap?.extra ?? 0;
   if (faceType === "upload") p += UPLOAD_PRICE;
@@ -46,22 +71,24 @@ function calcPrice(props: any){
   return p;
 }
 
-function fmt(n: number) {   // ✅ บอก TypeScript ว่า n เป็น number
+function fmt(n: number): string {
   return n.toLocaleString("th-TH");
 }
+
+// ─── WatchSVGProps ────────────────────────────────────────────
 interface WatchSVGProps {
-  face?: { fill?: string };
-  strap?: { fill?: string };
-  cas?: { fill?: string; id?: string };  
+  face?: { fill?: string } | null;
+  strap?: { fill?: string } | null;
+  cas?: { fill?: string; id?: string } | null;
   engraving?: string;
   faceType?: string;
-  uploadUrl?: string;
+  uploadUrl?: string | null;
   imgScale?: number;
   imgRotate?: number;
 }
 
 // ─── SVG Watch Preview ────────────────────────────────────────
-function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, imgRotate }: WatchSVGProps) {  
+function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, imgRotate }: WatchSVGProps) {
   const faceFill  = face?.fill  ?? "#111";
   const strapFill = strap?.fill ?? "#4A4A4A";
   const casFill   = cas?.fill   ?? "#C0C0C0";
@@ -69,7 +96,7 @@ function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, 
   const hColor    = faceFill === "#F0EDE8" ? "#1A1A1A" : "#E8C96A";
   const bevColor  = cas?.id === "gold" ? "#A0792E" : casFill;
   const logoColor = faceFill === "#F0EDE8" ? "#555555" : "#C9A84C";
-  const sc = (imgScale ?? 1) / 50;
+  const sc        = (imgScale ?? 1) / 50;
 
   return (
     <svg viewBox="0 0 200 260" width={190} height={247} xmlns="http://www.w3.org/2000/svg">
@@ -119,7 +146,7 @@ function WatchSVG({ face, strap, cas, engraving, faceType, uploadUrl, imgScale, 
       {uploadUrl && faceType === "upload" && (
         <image href={uploadUrl} x="46" y="76" width="108" height="108"
           clipPath="url(#dc)" opacity=".55" preserveAspectRatio="xMidYMid slice"
-          transform={`translate(100,130) scale(${sc}) rotate(${imgRotate}) translate(-100,-130)`}
+          transform={`translate(100,130) scale(${sc}) rotate(${imgRotate ?? 0}) translate(-100,-130)`}
         />
       )}
 
@@ -163,14 +190,12 @@ function Stepper({ step }: { step: number }) {
       <div className="flex items-center">
         {[1, 2, 3, 4].map((n, i) => (
           <div key={n} className={`flex items-center ${i < 3 ? "flex-1" : ""}`}>
-            {/* Dot */}
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-medium flex-shrink-0 transition-all duration-300
               ${n < step  ? "bg-yellow-500 text-black"
               : n === step ? "border border-yellow-500 text-yellow-500"
               :              "border border-zinc-700 text-zinc-600"}`}>
               {n < step ? "✓" : n}
             </div>
-            {/* Line */}
             {i < 3 && (
               <div className="flex-1 h-px mx-1 bg-zinc-800 relative overflow-hidden">
                 <div className="absolute inset-y-0 left-0 bg-yellow-500 transition-all duration-500"
@@ -188,7 +213,11 @@ function Stepper({ step }: { step: number }) {
 }
 
 // ─── Option Card ─────────────────────────────────────────────
-function OptionCard({ option, selected, onSelect }: { option: any; selected: any; onSelect: any }) {
+function OptionCard({ option, selected, onSelect }: {
+  option: Option;
+  selected: Option | null;
+  onSelect: (v: Option) => void;
+}) {
   const isSel = selected?.id === option.id;
   return (
     <button onClick={() => onSelect(option)}
@@ -210,22 +239,30 @@ function OptionCard({ option, selected, onSelect }: { option: any; selected: any
 }
 
 // ─── Step 1: Face ─────────────────────────────────────────────
-function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl }: {
-  face: any;
-  setFace: (v: any) => void;
+function StepFace({ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl, setUploadName, imgScale, setImgScale, imgRotate, setImgRotate }: {
+  face: Option | null;
+  setFace: (v: Option) => void;
   faceType: string;
   setFaceType: (v: string) => void;
-  uploadUrl: string;
-  setUploadUrl: (v: string) => void;
-}) {  
-  const fileRef = useRef(null);
+  uploadUrl: string | null;
+  setUploadUrl: (v: string | null) => void;
+  setUploadName: (v: string | null) => void;
+  imgScale: number;
+  setImgScale: (v: number) => void;
+  imgRotate: number;
+  setImgRotate: (v: number) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
 
-function handleFile(e: React.ChangeEvent<HTMLInputElement>) {    
-  const file = e.target.files[0];
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { alert("ไฟล์ใหญ่เกิน 5MB"); return; }
     const reader = new FileReader();
-    reader.onload = (ev) => { setUploadUrl(ev.target.result); setUploadName(file.name); };
+    reader.onload = (ev) => {
+      setUploadUrl(ev.target?.result as string ?? null);
+      setUploadName(file.name);
+    };
     reader.readAsDataURL(file);
   }
 
@@ -234,7 +271,6 @@ function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
       <h2 className="text-2xl font-light mb-0.5" style={{ fontFamily: "Georgia, serif" }}>Watch Face</h2>
       <p className="text-[10px] text-zinc-500 tracking-widest uppercase mb-4">เลือกหน้าปัดนาฬิกา</p>
 
-      {/* Face type tabs */}
       <div className="flex border-b border-zinc-800 mb-4">
         {[{ id: "basic", label: "Basic" }, { id: "upload", label: "อัปโหลดลาย +2,000" }].map(t => (
           <button key={t.id} onClick={() => setFaceType(t.id)}
@@ -251,7 +287,6 @@ function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
         </div>
       ) : (
         <div className="space-y-3">
-          {/* Upload zone */}
           <div onClick={() => fileRef.current?.click()}
             className="border border-dashed border-zinc-700 rounded-sm p-5 text-center cursor-pointer hover:border-yellow-500/40 transition-colors">
             <div className="text-zinc-500 text-2xl mb-2">↑</div>
@@ -265,9 +300,8 @@ function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
               className="text-[10px] text-yellow-500 w-full text-center">× ลบรูปภาพ</button>
           )}
 
-          {/* Sliders */}
           {[
-            { label: "ขนาด", val: imgScale, set: setImgScale, min: 20, max: 100 },
+            { label: "ขนาด", val: imgScale,  set: setImgScale,  min: 20, max: 100 },
             { label: "หมุน",  val: imgRotate, set: setImgRotate, min: 0,  max: 360 },
           ].map(s => (
             <div key={s.label} className="flex items-center gap-3 text-[10px] text-zinc-400 px-1">
@@ -285,7 +319,7 @@ function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
 }
 
 // ─── Step 2: Strap ────────────────────────────────────────────
-function StepStrap({ strap, setStrap }) {
+function StepStrap({ strap, setStrap }: { strap: Option | null; setStrap: (v: Option) => void }) {
   return (
     <div className="px-4 pb-2">
       <h2 className="text-2xl font-light mb-0.5" style={{ fontFamily: "Georgia, serif" }}>Strap</h2>
@@ -298,7 +332,7 @@ function StepStrap({ strap, setStrap }) {
 }
 
 // ─── Step 3: Case ─────────────────────────────────────────────
-function StepCase({ cas, setCas }) {
+function StepCase({ cas, setCas }: { cas: Option | null; setCas: (v: Option) => void }) {
   return (
     <div className="px-4 pb-2">
       <h2 className="text-2xl font-light mb-0.5" style={{ fontFamily: "Georgia, serif" }}>Case &amp; Colour</h2>
@@ -311,7 +345,12 @@ function StepCase({ cas, setCas }) {
 }
 
 // ─── Step 4: Engraving ────────────────────────────────────────
-function StepEngraving({ engraving, setEngraving, engDate, setEngDate }) {
+function StepEngraving({ engraving, setEngraving, engDate, setEngDate }: {
+  engraving: string;
+  setEngraving: (v: string) => void;
+  engDate: string;
+  setEngDate: (v: string) => void;
+}) {
   return (
     <div className="px-4 pb-2 space-y-4">
       <div>
@@ -343,7 +382,13 @@ function StepEngraving({ engraving, setEngraving, engDate, setEngDate }) {
 }
 
 // ─── Cart Page ────────────────────────────────────────────────
-function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
+function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }: {
+  cart: CartItem[];
+  removeItem: (id: number) => void;
+  delivery: string;
+  setDelivery: (v: string) => void;
+  onCheckout: () => void;
+}) {
   const sub = cart.reduce((a, c) => a + c.price, 0);
   const fee = delivery === "delivery" ? DELIVERY_PRICE : 0;
 
@@ -365,7 +410,6 @@ function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
       <h2 className="text-3xl font-light" style={{ fontFamily: "Georgia, serif" }}>Cart</h2>
       <p className="text-[10px] text-zinc-500 tracking-widest uppercase mb-4">ตะกร้าของคุณ — {cart.length} item{cart.length > 1 ? "s" : ""}</p>
 
-      {/* Items */}
       {cart.map((item, i) => (
         <div key={item.id} className="bg-zinc-900 border border-zinc-800 rounded-sm p-4">
           <div className="flex justify-between items-center mb-3">
@@ -380,7 +424,7 @@ function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {[["Face", item.face], ["Strap", item.strap], ["Case", item.cas], ["Engrave", item.engraving || "—"]].map(([k, v]) => (
+            {([["Face", item.face], ["Strap", item.strap], ["Case", item.cas], ["Engrave", item.engraving || "—"]] as [string, string][]).map(([k, v]) => (
               <div key={k}>
                 <span className="block text-[9px] text-zinc-500 uppercase tracking-widest mb-0.5">{k}</span>
                 <span className="text-[11px] text-white">{v}</span>
@@ -390,7 +434,6 @@ function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
         </div>
       ))}
 
-      {/* Delivery */}
       <div>
         <p className="text-[9px] text-zinc-500 tracking-widest uppercase mb-2 mt-2">Delivery Option</p>
         {[
@@ -412,9 +455,8 @@ function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
         ))}
       </div>
 
-      {/* Total */}
       <div className="border border-yellow-500/20 bg-yellow-500/[0.03] rounded-sm p-4 space-y-2">
-        {[["Subtotal", `${fmt(sub)} THB`], ["Delivery", fee ? `${fmt(fee)} THB` : "Free"]].map(([k, v]) => (
+        {([["Subtotal", `${fmt(sub)} THB`], ["Delivery", fee ? `${fmt(fee)} THB` : "Free"]] as [string, string][]).map(([k, v]) => (
           <div key={k} className="flex justify-between text-xs text-zinc-400"><span>{k}</span><span>{v}</span></div>
         ))}
         <div className="flex justify-between items-baseline border-t border-zinc-800 pt-2 mt-1">
@@ -435,7 +477,13 @@ function CartPage({ cart, removeItem, delivery, setDelivery, onCheckout }) {
 }
 
 // ─── Shipping Page ────────────────────────────────────────────
-function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }) {
+function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }: {
+  delivery: string;
+  setDelivery: (v: string) => void;
+  totalPrice: number;
+  onConfirm: () => void;
+  onBack: () => void;
+}) {
   const fee = delivery === "delivery" ? DELIVERY_PRICE : 0;
   return (
     <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
@@ -444,8 +492,8 @@ function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }) 
       <p className="text-[10px] text-zinc-500 tracking-widest uppercase">เลือกวิธีการรับสินค้า</p>
 
       {[
-        { id: "pickup",   icon: "📍", label: "รับที่ร้าน",    sub: "Pick up in store — Free" },
-        { id: "delivery", icon: "🚚", label: "จัดส่งถึงบ้าน", sub: `Home Delivery — +${fmt(DELIVERY_PRICE)} THB` },
+        { id: "pickup",   label: "รับที่ร้าน",    sub: "Pick up in store — Free" },
+        { id: "delivery", label: "จัดส่งถึงบ้าน", sub: `Home Delivery — +${fmt(DELIVERY_PRICE)} THB` },
       ].map(d => (
         <button key={d.id} onClick={() => setDelivery(d.id)}
           className={`w-full border rounded-sm p-3.5 flex items-center gap-3 text-left transition-all
@@ -461,7 +509,6 @@ function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }) 
         </button>
       ))}
 
-      {/* Conditional form */}
       <div className="space-y-2.5">
         {delivery === "pickup" ? (
           <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-sm p-3 text-[11px] text-yellow-500/80">
@@ -479,9 +526,8 @@ function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }) 
           className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm px-3.5 py-3 rounded-sm focus:outline-none focus:border-yellow-500 transition-colors placeholder:text-zinc-600" />
       </div>
 
-      {/* Summary */}
       <div className="border-t border-zinc-800 pt-4 space-y-2">
-        {[["ราคาสินค้า", `${fmt(totalPrice)} THB`], ["ค่าจัดส่ง", fee ? `${fmt(fee)} THB` : "Free"]].map(([k, v]) => (
+        {([["ราคาสินค้า", `${fmt(totalPrice)} THB`], ["ค่าจัดส่ง", fee ? `${fmt(fee)} THB` : "Free"]] as [string, string][]).map(([k, v]) => (
           <div key={k} className="flex justify-between text-xs text-zinc-400"><span>{k}</span><span>{v}</span></div>
         ))}
         <div className="flex justify-between items-baseline border-t border-zinc-800 pt-2">
@@ -501,10 +547,9 @@ function ShippingPage({ delivery, setDelivery, totalPrice, onConfirm, onBack }) 
 }
 
 // ─── Profile Page ─────────────────────────────────────────────
-function ProfilePage({ designs, onNew }) {
+function ProfilePage({ designs, onNew }: { designs: CartItem[]; onNew: () => void }) {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-5">
-      {/* Header */}
       <div className="text-center pb-5 border-b border-zinc-800 mb-5">
         <div className="w-14 h-14 rounded-full border border-yellow-500/30 mx-auto mb-3 flex items-center justify-center bg-yellow-500/5"
           style={{ fontFamily: "Georgia,serif", fontSize: 22, color: "#C9A84C" }}>A</div>
@@ -547,13 +592,17 @@ function ProfilePage({ designs, onNew }) {
 
 // ─── Bottom Nav ───────────────────────────────────────────────
 const NAV_ITEMS = [
-  { id: "home",    label: "Home",    icon: <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>, icon2: <path d="M9 21V12h6v9"/> },
+  { id: "home",    label: "Home",    icon: <><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></> },
   { id: "design",  label: "Design",  icon: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/></> },
   { id: "cart",    label: "Cart",    icon: <><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></> },
   { id: "profile", label: "Profile", icon: <><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></> },
 ];
 
-function BottomNav({ view, setView, cartCount }) {
+function BottomNav({ view, setView, cartCount }: {
+  view: string;
+  setView: (v: string) => void;
+  cartCount: number;
+}) {
   return (
     <nav className="flex bg-zinc-950 border-t border-zinc-900 h-14 flex-shrink-0">
       {NAV_ITEMS.map(({ id, label, icon }) => {
@@ -579,7 +628,7 @@ function BottomNav({ view, setView, cartCount }) {
 }
 
 // ─── SUCCESS SCREEN ───────────────────────────────────────────
-function SuccessScreen({ onHome }) {
+function SuccessScreen({ onHome }: { onHome: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
       <div className="w-16 h-16 rounded-full border border-yellow-500/40 flex items-center justify-center mb-5">
@@ -601,69 +650,59 @@ function SuccessScreen({ onHome }) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────
 export default function CustomWatchApp() {
-  // Navigation
   const [view, setView]     = useState("home");
-  const [prevView, setPrev] = useState("home");
+  const [, setPrev]         = useState("home");
 
-  // Design state
   const [step,       setStep]       = useState(1);
-  const [face,       setFace]       = useState(FACES[0]);
-  const [strap,      setStrap]      = useState(STRAPS[0]);
-  const [cas,        setCas]        = useState(CASES[0]);
+  const [face,       setFace]       = useState<Option>(FACES[0]);
+  const [strap,      setStrap]      = useState<Option>(STRAPS[0]);
+  const [cas,        setCas]        = useState<Option>(CASES[0]);
   const [engraving,  setEngraving]  = useState("");
   const [engDate,    setEngDate]    = useState("");
   const [faceType,   setFaceType]   = useState("basic");
-  const [uploadUrl,  setUploadUrl]  = useState(null);
-  const [uploadName, setUploadName] = useState(null);
+  const [uploadUrl,  setUploadUrl]  = useState<string | null>(null);
+  const [uploadName, setUploadName] = useState<string | null>(null);
   const [imgScale,   setImgScale]   = useState(50);
   const [imgRotate,  setImgRotate]  = useState(0);
 
-  // Cart & shipping
-  const [cart,     setCart]     = useState([]);
-  const [designs,  setDesigns]  = useState([]);
+  const [cart,     setCart]     = useState<CartItem[]>([]);
+  const [designs,  setDesigns]  = useState<CartItem[]>([]);
   const [delivery, setDelivery] = useState("delivery");
-  const [ordered,  setOrdered]  = useState(false);
+  const [, setOrdered]          = useState(false);
 
   const price = calcPrice({ strap, faceType, engraving });
 
-  // Navigate helper
-  function go(page) {
+  function go(page: string) {
     setPrev(view);
     setView(page);
   }
 
-  // Reset design flow
   function goDesign() {
     setStep(1);
     go("design");
   }
 
-  // Add to cart (called on last step)
   function addToCart() {
-    const item = {
+    const item: CartItem = {
       id: Date.now(),
       face: face.name, strap: strap.name, cas: cas.name,
       engraving, price,
       added: new Date().toLocaleDateString("th-TH"),
+      saved: new Date().toLocaleDateString("th-TH"),
     };
-    const newCart    = [...cart, item];
-    const newDesign  = { ...item, saved: new Date().toLocaleDateString("th-TH") };
-    setCart(newCart);
-    setDesigns(d => [newDesign, ...d]);
+    setCart(prev => [...prev, item]);
+    setDesigns(d => [item, ...d]);
     go("cart");
   }
 
-  // Checkout → shipping
   function checkout() { go("shipping"); }
 
-  // Place order
   function placeOrder() {
     setCart([]);
     setOrdered(true);
     go("success");
   }
 
-  // Step navigation
   function nextStep() {
     if (step < 4) setStep(s => s + 1);
     else addToCart();
@@ -672,7 +711,9 @@ export default function CustomWatchApp() {
     if (step > 1) setStep(s => s - 1);
   }
 
-  // Render step content
+  // suppress unused warning
+  void uploadName;
+
   const STEPS = [
     <StepFace key="1" {...{ face, setFace, faceType, setFaceType, uploadUrl, setUploadUrl, setUploadName, imgScale, setImgScale, imgRotate, setImgRotate }} />,
     <StepStrap key="2" strap={strap} setStrap={setStrap} />,
@@ -684,17 +725,14 @@ export default function CustomWatchApp() {
     <div className="bg-zinc-950 min-h-screen flex justify-center items-start font-sans text-white">
       <div className="w-full max-w-sm bg-black min-h-screen flex flex-col border-x border-zinc-900 overflow-hidden">
 
-        {/* ── HOME ─────────────────────────────────────────── */}
         {view === "home" && (
           <div className="flex-1 flex flex-col items-center justify-center px-8 text-center relative overflow-hidden">
-            {/* Atmosphere */}
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full opacity-[0.07] blur-3xl"
               style={{ background: "#C9A84C" }} />
             {[220, 320, 420].map(s => (
               <div key={s} className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-yellow-500/[0.06]"
                 style={{ width: s, height: s }} />
             ))}
-
             <span className="relative inline-block border border-yellow-500/30 text-yellow-500 text-[9px] tracking-[0.22em] uppercase px-4 py-1.5 rounded-full mb-8">
               Maison Chrono — Atelier de Montres
             </span>
@@ -715,7 +753,7 @@ export default function CustomWatchApp() {
               เริ่มออกแบบของคุณ →
             </button>
             <div className="flex gap-10 mt-14">
-              {[["4","Steps"],["∞","Combinations"],["14","Days"]].map(([n, l]) => (
+              {([["4","Steps"],["∞","Combinations"],["14","Days"]] as [string,string][]).map(([n, l]) => (
                 <div key={l} className="text-center">
                   <div className="text-2xl text-yellow-500 font-light" style={{ fontFamily: "Georgia,serif" }}>{n}</div>
                   <div className="text-[9px] text-zinc-600 tracking-widest uppercase mt-0.5">{l}</div>
@@ -725,22 +763,18 @@ export default function CustomWatchApp() {
           </div>
         )}
 
-        {/* ── DESIGN ───────────────────────────────────────── */}
         {view === "design" && (
           <>
-            {/* Live preview */}
             <div className="flex flex-col items-center pt-4 pb-1 relative flex-shrink-0">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-[0.07]"
                 style={{ background: "radial-gradient(circle,#C9A84C,transparent 70%)" }} />
               <WatchSVG {...{ face, strap, cas, engraving, faceType, uploadUrl, imgScale, imgRotate }} />
-              {/* Price */}
               <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="font-light text-yellow-500 text-2xl" style={{ fontFamily: "Georgia,serif" }}>
                   {fmt(price)}
                 </span>
                 <span className="text-[11px] text-zinc-500">THB</span>
               </div>
-              {/* Config chips */}
               <div className="flex flex-wrap gap-1.5 mt-2 justify-center px-4">
                 {[face?.name, strap?.name, cas?.name].map(l => (
                   <span key={l} className="text-[9px] tracking-widest uppercase border border-zinc-800 text-zinc-500 px-2 py-0.5 rounded-sm">{l}</span>
@@ -748,16 +782,13 @@ export default function CustomWatchApp() {
               </div>
             </div>
 
-            {/* Stepper */}
             <Stepper step={step} />
             <div className="h-px bg-zinc-900 mx-4 my-2.5" />
 
-            {/* Step content */}
             <div className="flex-1 overflow-y-auto pb-2">
               {STEPS[step - 1]}
             </div>
 
-            {/* Nav buttons */}
             <div className="flex gap-2 px-4 py-3 flex-shrink-0">
               {step > 1 && (
                 <button onClick={prevStep}
@@ -772,11 +803,10 @@ export default function CustomWatchApp() {
               </button>
             </div>
 
-            <BottomNav view={view} setView={v => { setView(v); }} cartCount={cart.length} />
+            <BottomNav view={view} setView={v => setView(v)} cartCount={cart.length} />
           </>
         )}
 
-        {/* ── CART ─────────────────────────────────────────── */}
         {view === "cart" && (
           <>
             <CartPage
@@ -790,7 +820,6 @@ export default function CustomWatchApp() {
           </>
         )}
 
-        {/* ── SHIPPING ─────────────────────────────────────── */}
         {view === "shipping" && (
           <>
             <ShippingPage
@@ -804,7 +833,6 @@ export default function CustomWatchApp() {
           </>
         )}
 
-        {/* ── PROFILE ──────────────────────────────────────── */}
         {view === "profile" && (
           <>
             <ProfilePage designs={designs} onNew={goDesign} />
@@ -812,7 +840,6 @@ export default function CustomWatchApp() {
           </>
         )}
 
-        {/* ── SUCCESS ──────────────────────────────────────── */}
         {view === "success" && (
           <>
             <SuccessScreen onHome={() => { setOrdered(false); go("home"); }} />
